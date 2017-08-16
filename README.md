@@ -186,6 +186,7 @@ promise
 + Non-promise, non-thenable
 
 When `[[Resolve]](promise, x)` just resolve promise with x
+
 ##Patterns
 ```javascript
 // Promisify
@@ -272,7 +273,7 @@ const obj = {
       .then(secondResult => {
         
         secondResult.foo.bar = "magic";
-        thirdAsyncOp(secondResult);
+        return thirdAsyncOp(secondResult);
       })
       .catch(err => {
         
@@ -418,7 +419,7 @@ const abstractDeferred = {
   resolve() {
     <...>
   },
-  resolve() {
+  reject() {
     <...>
   }
 };
