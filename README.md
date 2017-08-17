@@ -21,7 +21,7 @@ const promise = new Promise(function resolver(resolve) {
 
 const obj = {
   handler() {
-    assert.notEqual(this, oj);
+    assert.notEqual(this, obj);
   }
 };
 
