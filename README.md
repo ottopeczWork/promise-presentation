@@ -3,7 +3,7 @@
 ## Promises/A+
 + [CommonJS](https://en.wikipedia.org/wiki/CommonJS) => [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) => [Promises/A+](https://promisesaplus.com/)
 + The best way to learn about promises is to trying to implement them.
-+ Look at the compliance tests.
++ Compliance tests.
 + *"A promise represents the eventual result of an asynchronous operation."*
 
 ## The "then" method
@@ -13,20 +13,20 @@
 + Registers two handlers. One for the successful async operation one for failed async operation.
 + Both are optional arguments.
 + If they are not functions they are going to be ignored.
-+ They are executed as functions. No `this` in the handlers. (???)
++ They are executed as functions. No `this` in the handlers.
 ```javascript
 const promise = new Promise(function resolver(resolve) {
   resolve("thing");
 });
 
-const oj = {
+const obj = {
   handler() {
     assert.notEqual(this, oj);
   }
 };
 
 promise
-  .then(oj.handler, function onRejected() {
+  .then(obj.handler, function onRejected() {
     assert.ok(false);
   });
 ```
