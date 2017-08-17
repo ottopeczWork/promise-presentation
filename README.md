@@ -188,8 +188,8 @@ promise
 When `[[Resolve]](promise, x)` just resolve promise with x
 
 ## Patterns
+### Promisify
 ```javascript
-// Promisify
 const promise = new Promise(function resolver(resolve, reject) {
   
   asyncOperation({"foo": "bar"}, (err, result) => {
@@ -203,6 +203,7 @@ const promise = new Promise(function resolver(resolve, reject) {
 });
 
 ```
+### Connectiong two async operations
 ```javascript
 const obj = {
   method() {
@@ -217,23 +218,7 @@ const obj = {
   }
 };
 ```
-```javascript
-const obj = {
-  method() {
-    
-    asyncOperation({"foo": "bar"})
-      .then(result => {
-        
-        result.decorate = "withSomething";
-       
-        return result;
-      }, err => {
-        
-        logger.error(err);
-      });
-  }
-};
-```
+### Customizing errors
 ```javascript
 const obj = {
   method() {
@@ -254,6 +239,7 @@ const obj = {
   }
 };
 ```
+### Explicit promise chains
 ```javascript
 const obj = {
   method() {
@@ -264,6 +250,7 @@ const obj = {
   }
 };
 ```
+### Handling error for an ended promise chain. Same strategy...
 ```javascript
 const obj = {
   method() {
@@ -282,34 +269,34 @@ const obj = {
   }
 };
 ```
+### Handling error for an ended promise chain. Unique strategies...
 ```javascript
 const obj = {
   method() {
     
     firstAsyncOp()
-      .then(firstResult => secondAsyncOp(firstResult), err => handleErrForFirst(err))
-      .then(secondResult => thirdAsyncOp(secondResult), err => handleErrForSecond(err));
+      .then(firstResult => {
+        
+        firstResult.foo = "bar"; // Knowing what you know what you're doing
+        
+        return secondAsyncOp(firstResult);
+       }, err => handleErrForFirst(err))
+      .then(secondResult => thirdAsyncOp(secondResult), err => handleErrForSecond(err))
+      .catch(err => handleErrForThird(err));
   }
 };
 ```
+## Applying async operations on a collection of data
 ```javascript
 const obj = {
   method(arr) {
     
-    return Promise.all(arr.map(elemnt => {
-      
-      asyncOperation(elemnt)
-        .then(result => {
-          
-          result.foo = "bar";
-          
-          return result;
-        });
-    }));
+    return Promise.all(arr.map(elemnt => asyncOperation(elemnt)));
   }
 };
 ```
 ## Anti Patterns
+### Wrapping up a promise in an other promise
 ```javascript
 const obj = {
   method() {
@@ -326,6 +313,7 @@ const obj = {
   }
 }
 ```
+### Nested promises
 ```javascript
 const obj = {
   method() {
@@ -341,13 +329,14 @@ const obj = {
                   
                   result3.foo = "bar";
                   
-                  return result3;
+                  return asyncOperation4(result4);
                 })
             })
         });
   }
 }
 ```
+### Wrapping up nested promises
 ```javascript
 const obj = {
   method() {
@@ -375,6 +364,7 @@ const obj = {
   }
 }
 ```
+### Handling all the errors with same error handler
 ```javascript
 const obj = {
   method() {
@@ -388,16 +378,16 @@ const obj = {
       })
       .catch(err => {
         
-        if (err instanceof TypeError && err.message.includes("Cannot set property")) {
+        if (err instanceof TypeError && err.message.includes("Cannot set property of undefined")) {
           return logger.error("The result of second op is in bad shape: ", err);
-
         }
         
-        logger.error("An error occurred on the first async operation: ", err);
+        logger.error("An error occurred doing async operation: ", err);
       });
   }
 };
 ```
+### Wrapping up synchronous code
 ```javascript
 const obj = {
   method() {
@@ -433,7 +423,7 @@ const obj = {
 }
 ```
 ## Deferreds
-Non-standard... Questionable. Clearer code though. Use it only when that's the only way to promisify something.
+Non-standard... Questionable. Clearer code though. Use it when that's the only way to promisify something.
 
 API:
 ```
@@ -447,11 +437,10 @@ const abstractDeferred = {
   }
 };
 ```
+### Usage
 ```javascript
 const obj = {
-  method() {
-    
-    const deferred = defer();
+  method(deferred) {
     
     asyncOperation({"foo": "bar"}, (err, result) => {
       
@@ -466,7 +455,7 @@ const obj = {
   }
 };
 ```
-vs
+### vs
 ```javascript
 const obj = {
   method() {
