@@ -187,7 +187,7 @@ promise
 
 When `[[Resolve]](promise, x)` just resolve promise with x
 
-##Patterns
+## Patterns
 ```javascript
 // Promisify
 const promise = new Promise(function resolver(resolve, reject) {
@@ -207,12 +207,12 @@ const promise = new Promise(function resolver(resolve, reject) {
 const obj = {
   method() {
     
-    return asyncOperation({"foo": "bar"})
+    return firstAsyncOperation({"foo": "bar"})
       .then(result => {
         
-        result.decorate = "withSomething";
+        result.foo = "bar";
         
-        return result;
+        return secondAsyncOperation(result);
       });
   }
 };
@@ -238,12 +238,12 @@ const obj = {
 const obj = {
   method() {
     
-    return asyncOperation({"foo": "bar"})
+    return firstAsyncOperation({"foo": "bar"})
       .then(result => {
         
-        result.decorate = "withSomething";
+        result.foo = "bar";
         
-        return result;
+        return secondAsyncOperation(result);
       }, err => {
         
         const serviceError = new ServiceError("An error occurred accessing the database");
@@ -379,6 +379,29 @@ const obj = {
 const obj = {
   method() {
     
+    firstAsyncOp()
+      .then(firstResult => secondAsyncOp(firstResult))
+      .then(secondResult => {
+        
+        secondResult.foo.bar = "magic";
+        return thirdAsyncOp(secondResult);
+      })
+      .catch(err => {
+        
+        if (err instanceof TypeError && err.message.includes("Cannot set property")) {
+          return logger.error("The result of second op is in bad shape: ", err);
+
+        }
+        
+        logger.error("An error occurred on the first async operation: ", err);
+      });
+  }
+};
+```
+```javascript
+const obj = {
+  method() {
+    
     return firstAsyncOp()
       .then(firstResult => secondAsyncOp(firstResult))
       .then(secondResult => {
@@ -410,7 +433,7 @@ const obj = {
 }
 ```
 ## Deferreds
-Non-standard... Questionable. Clearer code though.
+Non-standard... Questionable. Clearer code though. Use it only when that's the only way to promisify something.
 
 API:
 ```
